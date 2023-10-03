@@ -9,7 +9,7 @@ app.use('/', function(req, res){
 });
 
 var server = require('http').createServer(app);
-let port = 3003;
+let port = 5000;
 server.listen(port, function(){
     console.log('Server is running');
 });
