@@ -10,6 +10,10 @@ exports.getUserInfo = (req, res, next) => {
     });
 }
 
+exports.xyz = (req, res, next) => {
+    return res.send('Hello World')
+}
+
 function validateRequire(input) {
     console.log(input)
     return input !== undefined && input !== '' && input !== null

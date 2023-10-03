@@ -5,5 +5,6 @@ router.get('/v1/user/getUserInfo', userController.getUserInfo);
 router.post('/v1/user/createUser', userController.createUser);
 router.get('/demo', userController.demo);
 router.post('/demoABC', userController.demoABC);
+router.get('/', userController.xyz);
 
 module.exports = router;
