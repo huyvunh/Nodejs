@@ -11,6 +11,6 @@ require('./app/routers/router')(app);
 
 var server = require('http').createServer(app);
 let port = 5000;
-server.listen(port, function () {
-    console.log('Server is running');
+server.listen(process.env.PORT || port, function () {
+    console.log('Server is running !');
 });
