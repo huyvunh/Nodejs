@@ -1,1 +1,1 @@
-web: node serverpo.js
+web: node server.js
