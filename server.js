@@ -6,7 +6,7 @@ app.set('trust proxy', 1);
 
 require('./config/enviroment')(app);
 require('./app/routers/router')(app);
-
+require('./app/processing/process')();
 // app.use('/', function(req, res){
 //     res.status(404).json({ error: "Not Found"});
 // });
