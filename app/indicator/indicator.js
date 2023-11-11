@@ -30,14 +30,14 @@ const sma_indicator_ct_lib = async (data, period) => {
 
 const sma_indicator_ct = (data, period) => {
     const SMA_period = period;
-    const avgPrices = data.map((day) =>
-        Number(parseFloat(new Decimal(day.open).plus(day.close).plus(day.low).plus(day.high).dividedBy(4)).toFixed(8))
-    );
-    // const avgPrices = data.map((day) => (day.open + day.close + day.low + day.high) / 4);
+    // const avgPrices = data.map((day) =>
+    //     Number(parseFloat(new Decimal(day.open).plus(day.close).plus(day.low).plus(day.high).dividedBy(4)).toFixed(8))
+    // );
+    const avgPrices = data.map((day) => (day.open + day.close + day.low + day.high) / 4);
     const SMA = []
     for (let i = 0; i < avgPrices.length; i++) {
-        if (i < SMA_period) {
-            SMA.push(null) // Chưa đủ dữ liệu để tính
+        if (i < SMA_period - 1) {
+            SMA.push(avgPrices[i]) // Chưa đủ dữ liệu để tính
         } else {
             let sum = 0
             for (let j = i - SMA_period + 1; j <= i; j++) {
@@ -56,8 +56,8 @@ const rsi_indicator_ct = (data, period) => {
     const changes = []
 
     // Tính chênh lệch giá giữa các ngày
-    for (let i = 1; i < prices.length; i++) {
-        changes.push(prices[i].close - prices[i - 1].close)
+    for (let i = 1; i < data.length; i++) {
+        changes.push(data[i].close - data[i - 1].close)
     }
 
     // Khởi tạo biến lưu tổng mức tăng và giảm
@@ -80,13 +80,13 @@ const rsi_indicator_ct = (data, period) => {
     const RSI_values = [rsi]
 
     // Tính RSI cho các ngày còn lại
-    for (let i = 1; i < prices.length - RSI_period; i++) {
+    for (let i = 1; i < data.length - RSI_period; i++) {
 
         // Xóa phần tử đầu mảng changes
         changes.shift()
 
         // Thêm phần tử mới vào cuối 
-        changes.push(prices[i + RSI_period].close - prices[i + RSI_period - 1].close)
+        changes.push(data[i + RSI_period].close - data[i + RSI_period - 1].close)
 
         // Tính lại ups, downs
         ups = 0; downs = 0
@@ -108,14 +108,52 @@ const rsi_indicator_ct = (data, period) => {
 
     return RSI_values;
 
+    // const RSI_values = [];
+    // // let prevClose = data[0].close;
+    // // let gain = 0;
+    // // let loss = 0;
+    // let avgGain = 0;
+    // let avgLoss = 0;
+
+    // // for (let i = 1; i < data.length; i++) {
+    // //     const close = data[i].close;
+    // //     const gain = Math.max(0, close - prevClose);
+    // //     const loss = Math.max(0, prevClose - close);
+
+    // //     avgGain = ((avgGain * (i - 1)) + gain) / i;
+    // //     avgLoss = ((avgLoss * (i - 1)) + loss) / i;
+
+    // //     if (i >= 14) {
+    // //         const Strength = avgGain / avgLoss;
+    // //         const rsi = 100 - (100 / (1 + Strength));
+    // //         RSI_values.push(rsi);
+    // //     }
+
+    // //     prevClose = close;
+
+    // for (let i = 1; i < data.length; i++) {
+    //     const priceDiff = data[i] - data[i - 1];
+    //     if (priceDiff > 0) {
+    //         avgGain = (avgGain * (period - 1) + priceDiff) / period;
+    //         avgLoss = (avgLoss * (period - 1)) / period;
+    //     } else {
+    //         avgGain = (avgGain * (period - 1)) / period;
+    //         avgLoss = (avgLoss * (period - 1) + Math.abs(priceDiff)) / period;
+    //     }
+
+    //     if (i >= period) {
+    //         const rs = avgGain / avgLoss;
+    //         const rsiValue = 100 - (100 / (1 + rs));
+    //         RSI_values.push(rsiValue);
+    //     }
+    // }
+    // return RSI_values;
 }
 
 const ema_indicator_ct = (data, period) => {
     const EMA_period = period;
     const smoothing = 2 / (EMA_period + 1)
-    const avgPrices = data.map((day) =>
-        Number(parseFloat(new Decimal(day.open).plus(day.close).plus(day.low).plus(day.high).dividedBy(4)).toFixed(8))
-    );
+    const avgPrices = data.map((day) => (day.open + day.close + day.low + day.high) / 4);
 
     // Tính EMA
     const EMA = []
@@ -134,6 +172,7 @@ const ema_indicator_ct = (data, period) => {
 
     return EMA;
 }
+
 const macd_indicator_ct = (data, shortPeriod, longPeriod, signalPeriod) => {
 
     // const EMA_short = [];
@@ -190,49 +229,61 @@ const macd_indicator_ct = (data, shortPeriod, longPeriod, signalPeriod) => {
     let closePrices = data.map((day) => day.close);
 
 
-    // Tính EMA ngắn hạn
-    const shortEma = []
-    let prevShortEma = null
-    for (let i = 0; i < closePrices.length; i++) {
-        if (i < shortPeriod) {
-            shortEma.push(null)
-        } else {
-            const currentEma = (closePrices[i] - prevShortEma) * (2 / (shortPeriod + 1)) + prevShortEma
-            shortEma.push(currentEma)
-            prevShortEma = currentEma
-        }
-    }
-    // Tính EMA dài hạn 
-    const longEma = []
-    let prevLongEma = null
-    for (let i = 0; i < closePrices.length; i++) {
-        if (i < longPeriod) {
-            longEma.push(null)
-        } else {
-            const currentEma = (closePrices[i] - prevLongEma) * (2 / (longPeriod + 1)) + prevLongEma
-            longEma.push(currentEma)
-            prevLongEma = currentEma
-        }
-    }
+    // // Tính EMA ngắn hạn
+    // const shortEma = []
+    // let prevShortEma = null
+    // for (let i = 0; i < closePrices.length; i++) {
+    //     if (i < shortPeriod) {
+    //         shortEma.push(null)
+    //     } else {
+    //         const currentEma = (closePrices[i] - prevShortEma) * (2 / (shortPeriod + 1)) + prevShortEma
+    //         shortEma.push(currentEma)
+    //         prevShortEma = currentEma
+    //     }
+    // }
+    // // Tính EMA dài hạn 
+    // const longEma = []
+    // let prevLongEma = null
+    // for (let i = 0; i < closePrices.length; i++) {
+    //     if (i < longPeriod) {
+    //         longEma.push(null)
+    //     } else {
+    //         const currentEma = (closePrices[i] - prevLongEma) * (2 / (longPeriod + 1)) + prevLongEma
+    //         longEma.push(currentEma)
+    //         prevLongEma = currentEma
+    //     }
+    // }
 
-    // Tính đường MACD 
-    const macdLine = []
-    for (let i = 0; i < longEma.length; i++) {
-        macdLine.push(shortEma[i] - longEma[i])
-    }
+    // // Tính đường MACD 
+    // const macdLine = []
+    // for (let i = 0; i < longEma.length; i++) {
+    //     macdLine.push(shortEma[i] - longEma[i])
+    // }
 
-    // Tính đường Signal 
-    const signalLine = []
-    let prevSignal = null
-    for (let i = 0; i < macdLine.length; i++) {
-        if (i < signalPeriod) {
-            signalLine.push(null)
-        } else {
-            const currentSignal = (macdLine[i] - prevSignal) * (2 / (signalPeriod + 1)) + prevSignal
-            signalLine.push(currentSignal)
-            prevSignal = currentSignal
-        }
-    }
+    // // Tính đường Signal 
+    // const signalLine = []
+    // let prevSignal = null
+    // for (let i = 0; i < macdLine.length; i++) {
+    //     if (i < signalPeriod) {
+    //         signalLine.push(null)
+    //     } else {
+    //         const currentSignal = (macdLine[i] - prevSignal) * (2 / (signalPeriod + 1)) + prevSignal
+    //         signalLine.push(currentSignal)
+    //         prevSignal = currentSignal
+    //     }
+    // }
+
+    const longEma = calculateEMA(closePrices, longPeriod);
+    const shortEma = calculateEMA(closePrices, shortPeriod);
+
+    // Tính MACD Line
+    const macdLine = emaFast.map((fast, i) => fast - emaSlow[i]);
+
+    // Tính Signal Line (MACD DEA)
+    const signalLine = calculateEMA(macdLine, signalPeriod);
+
+    // Tính MACD Histogram (MACD Diff)
+    const macdHistogram = macdLine.map((macd, i) => macd - signalLine[i])
 
     return { signalLine, shortEma, longEma };
 }
@@ -263,9 +314,11 @@ const macd_indicator_ct_lib = async (data, shortPeriod, longPeriod, signalPeriod
 
 module.exports = {
     sma_indicator_ct,
+    sma_indicator_ct_lib,
     rsi_indicator_ct,
     rsi_indicator_ct_lib,
     ema_indicator_ct,
+    ema_indicator_ct_lib,
     macd_indicator_ct,
     macd_indicator_ct_lib
 }

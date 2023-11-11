@@ -14,13 +14,20 @@ const { sma_indicator_ct,
     rsi_indicator_ct,
     rsi_indicator_ct_lib,
     ema_indicator_ct,
+    ema_indicator_ct_lib,
     macd_indicator_ct,
-    macd_indicator_ct_lib
+    macd_indicator_ct_lib,
+    sma_indicator_ct_lib
 } = require('../indicator/indicator')
 
-const sma_inc = (data, period) => {
+const sma_inc = async (data, period) => {
     const result = sma_indicator_ct(data, period);
     return data = data.map((d, i) => ({ ...d, sma: result[i] == null ? '' : result[i] }));
+}
+
+const sma_inc_async = async (data, period) => {
+    const result = await sma_indicator_ct_lib(data, period);
+    return data = data.map((d, i) => ({ ...d, sma_lib: result[i] == null ? '' : result[i] }));
 }
 
 const rsi_inc = async (data, period) => {
@@ -34,12 +41,22 @@ const rsi_inc_async = async (data, period) => {
 
 
 
-const ema_inc = (data, period) => {
+const ema_inc = async (data, period) => {
     const result = ema_indicator_ct(data, period);
     return data = data.map((d, i) => ({ ...d, ema: result[i] == null ? '' : result[i] }));
 }
 
-const macd_inc = async (data, shortPeriod, longPeriod, signalPeriod) => {
+const ema_inc_async = async (data, period) => {
+    const result = await ema_indicator_ct_lib(data, period);
+    return data = data.map((d, i) => ({ ...d, ema_lib: result[i] == null ? '' : result[i] }));
+}
+
+const macd_inc = async (data, period) => {
+    const result = macd_indicator_ct(data, period);
+    return data = data.map((d, i) => ({ ...d, macd: result[i] == null ? '' : result[i] }));
+}
+
+const macd_inc_async = async (data, shortPeriod, longPeriod, signalPeriod) => {
     const result = await macd_indicator_ct_lib(data, shortPeriod, longPeriod, signalPeriod);
     //console.log(result.macd_histogram)
     return data = data.map((d, i) => ({
@@ -69,11 +86,14 @@ exports.LongShortBinance = async () => {
             volume: parseFloat(d[1].volume),
         }))
         //console.log(chartData)
-        // chartData = sma_inc(chartData, 100)
-        chartData = await rsi_inc(chartData, 24)
-        chartData = await rsi_inc_async(chartData, 24)
-        //chartData = ema_inc(chartData, 10)
-        //chartData = await macd_inc(chartData, 12, 26, 9)
+        // chartData = await sma_inc(chartData, 100)
+        // chartData = await sma_inc_async(chartData, 100)
+        // chartData = await rsi_inc(chartData, 24)
+        // chartData = await rsi_inc_async(chartData, 24)
+        chartData = await ema_inc(chartData, 10)
+        chartData = await ema_inc_async(chartData, 10)
+        // chartData = await macd_inc(chartData, 12, 26, 9)
+        // chartData = await macd_inc_async(chartData, 12, 26, 9)
         console.table(chartData)
 
     })
